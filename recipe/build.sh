@@ -34,6 +34,10 @@ if [[ ! -d bootstrap-ghc ]]; then
   perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L\$topdir/../../../../lib -Wl,-rpath,\$topdir/../../../../lib"#g' "${settings_file}"
 
   # We enforce prioritizing the sysroot for self-consistently finding the libraries
+  if [[ "${target_platform}" == "osx-"* ]] && [[ -n "${SDKROOT}" ]]; then
+    perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L$ENV{SDKROOT}/usr/lib"#g' "${settings_file}"
+  fi
+
   if [[ "${target_platform}" == "linux-"* ]]; then
     # Add sysroot (this helps when cross-compiling on conda forge)
     perl -i -pe 's#("C compiler link flags", "--target[^\s]*)#\1 --sysroot=\$topdir/../../../../x86_64-conda-linux-gnu/sysroot#g' "${settings_file}"
