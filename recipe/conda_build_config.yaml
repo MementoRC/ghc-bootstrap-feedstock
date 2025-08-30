@@ -3,7 +3,7 @@ c_stdlib:                       # [not osx]
   - m2w64-sysroot               # [not unix]
 c_stdlib_version:
   - 11.0                        # [osx]
-  - 2.34                        # [linux]
+  - 2.17                        # [linux]
   - 12                          # [not unix]
 
 c_compiler:
