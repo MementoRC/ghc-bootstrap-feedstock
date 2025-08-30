@@ -34,8 +34,11 @@ if [[ ! -d bootstrap-ghc ]]; then
   perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L\$topdir/../../../../lib -Wl,-rpath,\$topdir/../../../../lib"#g' "${settings_file}"
 
   # We enforce prioritizing the sysroot for self-consistently finding the libraries
-  if [[ "${target_platform}" == "osx-"* ]] && [[ -n "${SDKROOT}" ]]; then
-    perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -liconv -L$ENV{SDKROOT}/usr/lib"#g' "${settings_file}"
+  if [[ "${target_platform}" == "osx-"* ]]; then
+    if [[ -n "${SDKROOT}" ]]; then
+      perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L$ENV{SDKROOT}/usr/lib"#g' "${settings_file}"
+    fi
+    perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -liconv"#g' "${settings_file}"
   fi
 
   if [[ "${target_platform}" == "linux-"* ]]; then
