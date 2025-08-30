@@ -35,10 +35,11 @@ if [[ ! -d bootstrap-ghc ]]; then
 
   # We enforce prioritizing the sysroot for self-consistently finding the libraries
   if [[ "${target_platform}" == "osx-"* ]]; then
+    # Use conda-forge libiconv
+    perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L\$topdir/../../../../lib -liconv"#g' "${settings_file}"
     if [[ -n "${SDKROOT}" ]]; then
       perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L$ENV{SDKROOT}/usr/lib"#g' "${settings_file}"
     fi
-    perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L\$topdir/../../../../lib -liconv"#g' "${settings_file}"
   fi
 
   if [[ "${target_platform}" == "linux-"* ]]; then
