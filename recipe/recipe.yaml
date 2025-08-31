@@ -127,6 +127,7 @@ tests:
       - if: unix
         then: |
           find "${PREFIX}" -name "*iconv*" -type f
+          find "${SDKROOT}" -name "*iconv*" -type f
           ${PREFIX}/ghc-bootstrap/bin/ghc -v hello.hs
           ./hello
         else: |
