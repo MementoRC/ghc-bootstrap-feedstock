@@ -1,5 +1,5 @@
 context:
-  version: "9.10.2"
+  version: "9.12.2"
 
 package:
   name: ghc-bootstrap
