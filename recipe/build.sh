@@ -16,12 +16,6 @@ if [[ ! -d bootstrap-ghc ]]; then
       --build="${BUILD}" \
       --host="${HOST}" \
       --enable-ghc-toolchain >& "${SRC_DIR}"/_logs/configure.log
-  elif [[ "${target_platform}" == "osx-"* ]]; then
-    bash configure \
-      --prefix="${PREFIX}"/ghc-bootstrap \
-      --with-iconv-includes="${PREFIX}/include" \
-      --with-iconv-libraries="${PREFIX}/lib" \
-      --enable-ghc-toolchain >& "${SRC_DIR}"/_logs/configure.log
   else
     bash configure \
       --prefix="${PREFIX}"/ghc-bootstrap \
@@ -42,9 +36,9 @@ if [[ ! -d bootstrap-ghc ]]; then
   # We enforce prioritizing the sysroot for self-consistently finding the libraries
   if [[ "${target_platform}" == "osx-"* ]]; then
     # Use conda-forge libiconv
-    perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L\$topdir/../../../../lib/libiconv.2.dylib"#g' "${settings_file}"
+    # perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L\$topdir/../../../../lib/libiconv.2.dylib"#g' "${settings_file}"
     if [[ -n "${SDKROOT}" ]]; then
-      perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 -L$ENV{SDKROOT}/usr/lib"#g' "${settings_file}"
+      perl -i -pe 's#("C compiler link flags", ")([^"]*)"#\1\2 $ENV{SDKROOT}/usr/lib/libiconv.2.tbd -L$ENV{SDKROOT}/usr/lib"#g' "${settings_file}"
     fi
   fi
 
