@@ -6,14 +6,22 @@ package:
   version: ${{ version }}
 
 source:
-  - if: osx
+  - if: osx and x86_64
     then:
       url: https://downloads.haskell.org/~ghc/${{ version }}/ghc-${{ version }}-x86_64-apple-darwin.tar.xz
       sha256: 8cf22188930e10d7ac5270d425e21a3dab606af73a655493639345200c650be9
-  - if: linux
+  - if: osx and arm64
+    then:
+      url: https://downloads.haskell.org/~ghc/${{ version }}/ghc-${{ version }}-aarch64-apple-darwin.tar.xz
+      sha256: ffaf83b5d7a8b2c04920c6e3909c0be21dde27baf380d095fa27e840a3a2e804
+  - if: linux and x86_64
     then:
       url: https://downloads.haskell.org/~ghc/${{ version }}/ghc-${{ version }}-x86_64-ubuntu20_04-linux.tar.xz
       sha256: ae3be406fdb73bd2b0c22baada77a8ff2f8cde6220dd591dc24541cfe9d895eb
+  - if: linux and aarch64
+    then:
+      url: https://downloads.haskell.org/~ghc/${{ version }}/ghc-${{ version }}-aarch64-deb10-linux.tar.xz
+      sha256: e6df50e62b696e3a8b759670fc79207ccc26e88a79a047561ca1ccb8846157dd
   - if: not unix
     then:
       url: https://downloads.haskell.org/~ghc/${{ version }}/ghc-${{ version }}-x86_64-unknown-mingw32.tar.xz
@@ -21,21 +29,32 @@ source:
       target_directory: bootstrap-ghc
 
 build:
-  number: 3
-  # We will not need x-compiled ghc-bootstrap
-  skip: aarch64 or arm64
+  number: 4
+  # No upstream bindist exists for ppc64le and win-arm64
+  skip: ppc64le or (win and arm64)
 
 requirements:
   build:
-    - ${{ compiler('c') }}
-    - ${{ compiler('cxx') }}
-    - ${{ stdlib('c') }}
+    - if: win
+      then:
+        - ${{ compiler('m2w64_c') }}
+        - ${{ compiler('m2w64_cxx') }}
+        - ${{ stdlib('m2w64_c') }}
+      else:
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
+        - ${{ stdlib('c') }}
     - gmp
     - libffi
     - perl
 
+    - if: linux and aarch64
+      then:
+        - binutils
+
     - if: unix
       then:
+        - coreutils
         - file
         - make
         - ncurses
@@ -85,6 +104,9 @@ tests:
             - ghc-bootstrap/lib/ghc-${{ version }}/bin/ghc-toolchain-bin${{ "" if unix else ".exe" }}
             - ghc-bootstrap/lib/ghc-${{ version }}/lib/settings
             - ghc-bootstrap/lib/ghc-${{ version }}/lib/package.conf.d/**
+            - if: linux and aarch64
+              then:
+                - ghc-bootstrap/lib/ghc-${{ version }}/lib/private/libghc_glibc_compat.so
           else:
             - ghc-bootstrap/bin/ghc-iserv-ghc-${{ version }}.exe
             - ghc-bootstrap/bin/ghc-iserv-prof-ghc-${{ version }}.exe
@@ -113,8 +135,13 @@ tests:
           - CALL %PREFIX%/ghc-bootstrap/bin/windres.bat --help
     requirements:
       run:
-        - ${{ compiler('c') }}
-        - ${{ stdlib('c') }}
+        - if: win
+          then:
+            - ${{ compiler('m2w64_c') }}
+            - ${{ stdlib('m2w64_c') }}
+          else:
+            - ${{ compiler('c') }}
+            - ${{ stdlib('c') }}
         - if: not unix
           then: binutils
 
@@ -130,8 +157,13 @@ tests:
           hello.exe
     requirements:
       run:
-        - ${{ compiler('c') }}
-        - ${{ stdlib('c') }}
+        - if: win
+          then:
+            - ${{ compiler('m2w64_c') }}
+            - ${{ stdlib('m2w64_c') }}
+          else:
+            - ${{ compiler('c') }}
+            - ${{ stdlib('c') }}
         - if: not unix
           then: binutils
 
@@ -145,8 +177,13 @@ tests:
           echo Skipping signal test on Windows
     requirements:
       run:
-        - ${{ compiler('c') }}
-        - ${{ stdlib('c') }}
+        - if: win
+          then:
+            - ${{ compiler('m2w64_c') }}
+            - ${{ stdlib('m2w64_c') }}
+          else:
+            - ${{ compiler('c') }}
+            - ${{ stdlib('c') }}
         - if: not unix
           then: binutils
 
@@ -160,7 +197,7 @@ about:
     for the functional language Haskell.
     
     Conda-Forge Requirements:
-    - Linux: glibc >= 2.34, clang compiler
+    - Linux: glibc >= 2.17, clang compiler
     - macOS: macOS >= 11.0, clang compiler
     - Windows: MSYS2/MinGW toolchain, binutils
     Note: Windows builds may show overlinking warnings for system DLLs
